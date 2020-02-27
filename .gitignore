@@ -1,0 +1,4 @@
+psql_creds.py
+*.crt
+*.key
+__pycache__
