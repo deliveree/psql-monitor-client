@@ -1,4 +1,5 @@
-psql_creds.py
+creds.conf
 *.crt
 *.key
 __pycache__
+settings.json

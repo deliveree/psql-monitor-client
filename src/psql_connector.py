@@ -1,33 +1,33 @@
-import psql_creds as cred
+from psycopg2 import connect
 
 
 class PSQLConnector():
-    def __init__(self):
-        self.conn = self.connect()
+    def __init__(self, conf):
+        self.conn = self.connect(conf)
 
-    def connect(self):
+    def _connect(self, conf):
         conn = connect(
-            database=cred.database,
-            user=cred.database,
-            password=cred.password,
+            database=conf["database"],
+            user=conf["user"],
+            password=conf["password"],
         )
 
         print('Successfully connected with local PSQL')
         return conn
 
-    def _query_select_execute(self, query):
+    def _select_single_execute(self, query):
         cur = self.conn.cursor()
         cur.execute(query)
         values = cur.fetchall()
         return values[0][0]
 
-    def query_select(self, query):
+    def select_single(self, query):
         try:
             return self._query_select_execute(query)
         except InterfaceError as e:
             if "connection already closed" in str(e).lower():
                 self.conn = self.connect()
-                return self.query_select_execute(query)
+                return self._select_single_execute(query)
             else:
                 raise
 

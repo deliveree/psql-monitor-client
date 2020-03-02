@@ -10,3 +10,8 @@ This app run every 5 seconds to retrieve these figures:
 Then it pushes them to a central server.
 
 ## Getting Started:
+
+## Development:
+```
+pytest --disable-warnings
+```

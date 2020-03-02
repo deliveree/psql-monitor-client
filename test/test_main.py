@@ -1,22 +1,32 @@
-from datetime import datetime, timedelta
-from src.main import run
+import os, sys
+sys.path.append(os.path.abspath('../src'))
 
-def test_client_fetch_figures():
+from datetime import datetime, timedelta
+from psql_connector import PSQLConnector
+from main import get_data
+import toml
+
+
+def test_client_fetch_figures_success():
+    conf = toml.load("./creds.conf")
+    db = PSQLConnector(conf["psql"])
+    interval = timedelta(seconds=3)
+    data = get_data(db)
+
     start = datetime.now()
 
-    run()
-    delay_time = None
-    total_queries = None
-    ram_available = None
-    load_average = None
-    cpu_usage = None
+    delay_time = data["delay_time"]
+    total_queries = data["total_queries"]
+    ram_available = data["ram_available"]
+    load_average = data["load_average"]
+    cpu_usage = data["cpu_usage"]
 
     runtime = datetime.now() - start
 
-    assert type(delay_time) is int
-    assert type(total_queries) is int
-    assert type(ram_available) is int
-    assert type(load_average) is int
-    assert type(cpu_usage) is int
+    assert delay_time >= 0
+    assert total_queries >= 0
+    assert ram_available > 0
+    assert load_average > 0
+    assert cpu_usage > 0
 
     assert runtime < timedelta(seconds=0.5)
