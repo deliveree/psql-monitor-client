@@ -1,9 +1,9 @@
-from psycopg2 import connect
+from psycopg2 import connect, InterfaceError
 
 
 class PSQLConnector():
     def __init__(self, conf):
-        self.conn = self.connect(conf)
+        self.conn = self._connect(conf)
 
     def _connect(self, conf):
         conn = connect(
@@ -23,7 +23,7 @@ class PSQLConnector():
 
     def select_single(self, query):
         try:
-            return self._query_select_execute(query)
+            return self._select_single_execute(query)
         except InterfaceError as e:
             if "connection already closed" in str(e).lower():
                 self.conn = self.connect()

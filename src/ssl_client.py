@@ -1,11 +1,12 @@
 import ssl
 from pickle import dumps
+from socket import socket
 
 
 class SSLClient:
     def __init__(self, conf):
         client = self._get_ssl_context().wrap_socket(
-            socket.socket(), server_hostname=conf["host"]
+            socket(), server_hostname=conf["host"]
         )
 
         client.connect((conf["host"], conf["port"]))
