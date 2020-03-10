@@ -1,4 +1,4 @@
-from psycopg2 import connect, InterfaceError
+from asyncpg import connect, InterfaceError
 
 
 class PSQLConnector():
@@ -15,15 +15,9 @@ class PSQLConnector():
         print('Successfully connected with local PSQL')
         return conn
 
-    def _select_single_execute(self, query):
-        cur = self.conn.cursor()
-        cur.execute(query)
-        values = cur.fetchall()
-        return values[0][0]
-
-    def select_single(self, query):
+    async def select_single(self, query):
         try:
-            return self._select_single_execute(query)
+            return await self.conn.fetch(query)
         except InterfaceError as e:
             if "connection already closed" in str(e).lower():
                 self.conn = self.connect()
@@ -33,3 +27,6 @@ class PSQLConnector():
 
     def close(self):
         self.conn.close()
+
+async def select_single():
+    con = await asyncpg.connect(user='postgres')

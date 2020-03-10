@@ -1,5 +1,6 @@
 creds.conf
 *.crt
 *.key
+*.log
 __pycache__
 settings.json

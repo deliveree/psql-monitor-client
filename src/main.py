@@ -5,13 +5,21 @@ from ssl_client import SSLClient
 from os import getloadavg
 from psutil import cpu_percent, virtual_memory
 from socket import gethostname
-import toml
+import asyncio
+import logging
+from toml import load
+
+
+def config_log():
+    log_conf = load("conf/log.conf")
+    log_path = log_conf.get("filepath", "main.log")
+    logging.basicConfig(filename=log_path, level=logging.INFO)
 
 
 def get_delay(psql):
     query = """SELECT EXTRACT(EPOCH
                 FROM (NOW() - pg_last_xact_replay_timestamp()))::INT;"""
-    delay = psql.select_single(query) or 0
+    delay = asyncio.run(psql.select_single(query)) or 0
     return delay
 
 
@@ -20,7 +28,7 @@ def get_total_queries_in_queue(psql):
                 FROM pg_stat_activity
                 WHERE datname = 'deliveree'
                         AND state = 'active'"""
-    count = psql.select_single(query) or 0
+    count = asyncio.run(psql.select_single(query)) or 0
     return count if count == 0 else count - 1
 
 
@@ -58,7 +66,8 @@ def wait(interval, start_time):
 
 
 def run():
-    conf = toml.load("./creds.conf")
+    config_log()
+    conf = load("conf/creds.conf")
     psql = PSQLConnector(conf["psql"])
     client = SSLClient(conf["daemon"])
     interval = timedelta(seconds=3)
@@ -69,7 +78,7 @@ def run():
             client.send(get_data(psql))
             wait(interval, start_time)
     except Exception as ex:
-        print(ex)
+        logging.error(ex)
         raise
     finally:
         client.close()

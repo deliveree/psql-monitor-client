@@ -1,20 +1,21 @@
 import os, sys
 sys.path.append(os.path.abspath('../src'))
 
-import toml
+from toml import load
 import asyncio
 import pytest
 from datetime import datetime, timedelta
 from socket import gethostname, socket
 from pickle import dumps
+import asyncpg
 
 from psql_connector import PSQLConnector
 from ssl_client import SSLClient
-from main import get_data
+from main import get_total_queries_in_queue, get_delay
 
 
 def test_client_fetch_figures_success():
-    conf = toml.load("./creds.conf")
+    conf = load("./creds.conf")
     db = PSQLConnector(conf["psql"])
     data = get_data(db)[gethostname()]
 
@@ -39,7 +40,7 @@ def test_connect_server_success():
             "key": "value"
         }
 
-        conf = toml.load("./creds.conf")
+        conf = load("./creds.conf")
         client = SSLClient(conf["daemon"])
         client.send(data)
         client.close()
@@ -48,3 +49,16 @@ def test_connect_server_success():
             "Please make sure you start the server "
             "by running 'python socket_server.py'"
         ) from ex
+
+
+def test_async():
+    conf = load("../src/conf/creds.conf")
+    db = PSQLConnector(conf["psql"])
+    start = datetime.now()
+    total = get_total_queries_in_queue(db)
+    delay = get_delay(db)
+
+    print("Runtime: ", str(datetime.now() - start))
+
+
+# from test_main import test_async
