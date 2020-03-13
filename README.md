@@ -9,6 +9,19 @@ This app run every 3 seconds to retrieve these figures:
 
 Then it pushes them to a central server.
 
+## Example of data stored in redis:
+```
+{
+    "server_1": {
+        "cpu_usage": 10000,
+        "cpu_usage_updated_at": "2020-01-30 00:00:00",
+        "delay": 100,
+        "delay_updated_at": "2020-01-30 00:00:00",
+    },
+    "server_2": {...}
+}
+```
+
 ## Getting Started:
 
 ### 1. Authentication Setup:
