@@ -1,3 +1,6 @@
+from os import getloadavg
+from psutil import cpu_percent, virtual_memory
+
 DELAY = "delay"
 TOTAL_QUERIES = "total_queries"
 LOAD_AVERAGE = "load_average"
@@ -9,7 +12,7 @@ class ResourceMonitor:
     def __init__(self, psql_conn):
         self.psql_conn = psql_conn
 
-    def _get_delay_query():
+    def _get_delay_query(self):
         psql_sync_type = self.psql_conn.sync_type
         if psql_sync_type == "logical":
             query = """
@@ -22,12 +25,12 @@ class ResourceMonitor:
                 SELECT EXTRACT(EPOCH
                 FROM (NOW() - pg_last_xact_replay_timestamp()))::INT;
             """
-        return query
+        return "SELECT pg_sleep(2)"
 
     def _get_delay(self):
         query = self._get_delay_query()
         delay = self.psql_conn.select_single(query) or 0
-        return payload("delay", delay)
+        return delay
 
     def _get_total_queries(self):
         query = """SELECT count(*)
@@ -38,23 +41,23 @@ class ResourceMonitor:
         if count != 0:
             count -= 1
 
-        return payload("total_queries", count)
+        return count
 
     def _get_load_average(self):
-        return payload("load_average", getloadavg()[0])
+        return getloadavg()[0]
 
     def _get_cpu_usage(self):
-        return payload("cpu_usage", cpu_percent())
+        return cpu_percent()
 
     def _get_ram_available(self):
-        return payload("ram_available", virtual_memory().free / 1024)
+        return virtual_memory().free / 1024
 
     def get_resource(self, type):
         switcher = {
-            DELAY: get_delay(),
-            TOTAL_QUERIES: get_total_queries(),
-            LOAD_AVERAGE: get_load_average(),
-            CPU_USAGE: get_cpu_usage(),
-            RAM_AVAILABLE: get_ram_available()
+            DELAY: self._get_delay(),
+            TOTAL_QUERIES: self._get_total_queries(),
+            LOAD_AVERAGE: self._get_load_average(),
+            CPU_USAGE: self._get_cpu_usage(),
+            RAM_AVAILABLE: self._get_ram_available()
         }
         return switcher[type]

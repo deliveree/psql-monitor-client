@@ -1,6 +1,7 @@
 import ssl
 from pickle import dumps
 from socket import socket
+import logging
 
 
 class SSLClient:

@@ -2,10 +2,9 @@ from psql_connector import PSQLConnector
 from datetime import datetime, timedelta
 from time import sleep
 from ssl_client import SSLClient
-from os import getloadavg
-from psutil import cpu_percent, virtual_memory
+
 from socket import gethostname
-from threading import Thread
+from threading import Thread, active_count
 import logging
 from toml import load
 
@@ -41,6 +40,7 @@ def wait(interval, start_time):
 def send(type):
     res = res_monitor.get_resource(type)
     payload = gen_payload(type, res)
+    print("Before send")
     client.send(payload)
 
 
@@ -55,23 +55,21 @@ def run():
 
     client = SSLClient(conf["daemon"])
     interval = timedelta(seconds=3)
-    res_types = (DELAY)
+    res_types = DELAY,
 
     try:
         while True:
-            # start_time = datetime.now()
-
             threads = []
+            start_time = datetime.now()
+            print("Active thread:", active_count())
+
             for res in res_types:
-                threads.append(Thread(target=client.send, args=(res,)))
+                threads.append(Thread(target=send, args=(res,)))
 
             for thread in threads:
                 thread.start()
 
-            for thread in threads:
-                thread.join(1)
-
-            # wait(interval, start_time)
+            wait(interval, start_time)
     except Exception as ex:
         logging.error(ex)
         raise
