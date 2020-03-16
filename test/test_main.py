@@ -57,7 +57,6 @@ def test_async():
     start = datetime.now()
     total = get_total_queries_in_queue(db)
     delay = get_delay(db)
-
     print("Runtime: ", str(datetime.now() - start))
 
 

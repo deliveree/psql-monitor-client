@@ -4,14 +4,14 @@ from socket import socket
 import logging
 
 
-class SSLClient:
+class SSLConnection:
     def __init__(self, conf):
-        client = self._get_ssl_context().wrap_socket(
+        conn = self._get_ssl_context().wrap_socket(
             socket(), server_hostname=conf["host"]
         )
 
-        client.connect((conf["host"], conf["port"]))
-        self.client = client
+        conn.connect((conf["host"], conf["port"]))
+        self.conn = conn
 
     def _get_ssl_context(self):
         ssl_context = ssl.create_default_context(
@@ -21,7 +21,8 @@ class SSLClient:
         return ssl_context
 
     def send(self, data):
-        self.client.send(dumps(data))
+        data = dumps(data)
+        self.conn.send(data)
 
     def close(self):
-        self.client.close()
+        self.conn.close()

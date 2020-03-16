@@ -1,4 +1,5 @@
 from psycopg2 import connect, InterfaceError
+import logging
 
 
 class PSQLConnector():
@@ -13,7 +14,7 @@ class PSQLConnector():
             password=conf["password"],
         )
 
-        print('Successfully connected with local PSQL')
+        logging.info('Successfully connected with local PSQL')
         return conn
 
     def _select_single_execute(self, query):
