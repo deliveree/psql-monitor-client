@@ -40,11 +40,10 @@ class Client():
             threads.append(thread)
             thread.start()
 
-        sleep(thread_timeout)
         for thread in threads:
+            thread.join(thread_timeout)
             if thread.is_alive():
                 logging.error("Timeout for getting " + str(thread.name))
-            thread.join()
 
         self._wait(self.interval, start_time)
 
@@ -72,7 +71,7 @@ class Client():
                 conn = self.shared_conn.pop()
                 conn.send(payload)
                 self.shared_conn.append(conn)
-                logging.info("Sent payload of " + str(res_type))
+                logging.info("Sent " + str(payload))
                 return
 
     def start(self):

@@ -1,13 +1,12 @@
 ## Client:
 
-This app run every 3 seconds to retrieve these figures:
+This app triggers every second to retrieve these figures and pushes them to a central server separately:
 - PostgreSQL’s Sync delay time
 - PostgreSQL’s amount of concurrent queries
 - RAM (used/free)
 - CPU usage (pecentage)
 - Load Average (last 1 minute only)
 
-Then it pushes them to a central server.
 
 ## Example of data stored in redis:
 ```
@@ -53,13 +52,21 @@ Fill credentials in file **src/sample_creds.conf** and change its name to **cred
 - **daemon**: the target server that figures will be sent to.
 
 
-### 3. Run Client
+### 3. Run App
 ```
 python main.py
 ```
 
+## Options:
+### Config log path
+The default log is **src/main.log**
+You can change path to log in **conf/log.conf**
+
 ## Development
 
+Each resource is retrieved and pushed to central server within a thread. The time waiting for each thread is 0.05s.
+
+### Test
 The test in this project run a server and client in different processes.
 
 Make sure server's and client's credentials (server.crt, server.key, client_certs.crt) are in **test/**.
