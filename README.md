@@ -60,17 +60,13 @@ python main.py
 
 ## Development
 
-The test in this project requires a running local server, which is socket_server.py
-Make sure server's and client's credentials (server.crt, server.key, client_certs.crt) are in **test/**
+The test in this project run a server and client in different processes.
 
-Make sure common name for server when creating certicate is **localhost**
+Make sure server's and client's credentials (server.crt, server.key, client_certs.crt) are in **test/**.
 
-1. Run server. In **test/**:
-```
-python socket_server.py
-```
+Make sure common name for server when creating certicate is **localhost**.
 
-2. Run tests. In **test/**:
+Run tests. In **test/**:
 ```
 pytest --disable-warnings
 ```
