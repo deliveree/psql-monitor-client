@@ -14,8 +14,7 @@ from resource_monitor import (
 
 
 class Client():
-    def __init__(self):
-        conf = load("conf/creds.conf")
+    def __init__(self, conf):
         psql_conn = PSQLConnector(conf["psql"])
 
         self.host = conf["host"]
@@ -30,6 +29,7 @@ class Client():
         threads = []
         start_time = datetime.now()
         thread_timeout = 0.05
+        task_interval = 0.05
 
         for res in self.res_types:
             thread = Thread(
@@ -39,6 +39,7 @@ class Client():
             )
             threads.append(thread)
             thread.start()
+            sleep(task_interval)
 
         for thread in threads:
             thread.join(thread_timeout)

@@ -15,6 +15,7 @@ def config_log():
 
 
 if __name__ == "__main__":
+    conf = load("conf/creds.conf")
     config_log()
-    client = Client()
+    client = Client(conf)
     client.start()

@@ -1,5 +1,5 @@
 import ssl
-from pickle import dumps
+from json import dumps
 from socket import socket
 import logging
 
@@ -26,7 +26,7 @@ class SSLConnection:
         return ssl_context
 
     def send(self, data):
-        data = dumps(data)
+        data = dumps(data).encode()
         self.conn.send(data)
 
     def close(self):
