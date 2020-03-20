@@ -10,11 +10,9 @@ from pickle import dumps
 import logging
 from multiprocessing import Process
 
-from client import Client
+from modules.client import Client
 from test_server import TestServer
-from resource_monitor import (
-    DELAY, TOTAL_QUERIES, LOAD_AVERAGE, CPU_USAGE, RAM_AVAILABLE
-)
+from resource_monitor ResourceMonitor
 
 
 def run_client():
@@ -46,7 +44,7 @@ def test_connect_server_success():
 
         assert len(log) == 5
         for res in (
-            DELAY, TOTAL_QUERIES, LOAD_AVERAGE, CPU_USAGE, RAM_AVAILABLE
+            ResourceMonitor.res_types
         ):
             assert res in str(log)
     except KeyboardInterrupt as ex:

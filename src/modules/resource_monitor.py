@@ -2,14 +2,12 @@ from time import sleep
 from os import getloadavg
 from psutil import cpu_percent, virtual_memory
 
-DELAY = "delay"
-TOTAL_QUERIES = "total_queries"
-LOAD_AVERAGE = "load_average"
-CPU_USAGE = "cpu_usage"
-RAM_AVAILABLE = "ram_available"
-
 
 class ResourceMonitor:
+    res_types = [
+        "delay", "total_queries", "load_average", "cpu_usage", "ram_available"
+    ]
+
     def __init__(self, psql_conn):
         self.psql_conn = psql_conn
 
@@ -54,10 +52,10 @@ class ResourceMonitor:
 
     def get_resource(self, type):
         switcher = {
-            DELAY: self._get_delay,
-            TOTAL_QUERIES: self._get_total_queries,
-            LOAD_AVERAGE: self._get_load_average,
-            CPU_USAGE: self._get_cpu_usage,
-            RAM_AVAILABLE: self._get_ram_available
+            "delay": self._get_delay,
+            "total_queries": self._get_total_queries,
+            "load_average": self._get_load_average,
+            "cpu_usage": self._get_cpu_usage,
+            "ram_available": self._get_ram_available
         }
         return switcher[type]()

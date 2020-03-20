@@ -7,10 +7,7 @@ import logging
 
 from psql_connector import PSQLConnector
 from ssl_connection import SSLConnection
-from resource_monitor import (
-    ResourceMonitor,
-    DELAY, TOTAL_QUERIES, LOAD_AVERAGE, CPU_USAGE, RAM_AVAILABLE
-)
+from resource_monitor import ResourceMonitor
 
 
 class Client():
@@ -21,9 +18,6 @@ class Client():
         self.res_monitor = ResourceMonitor(psql_conn)
         self.shared_conn = [SSLConnection(conf["daemon"])]
         self.interval = timedelta(seconds=1)
-        self.res_types = (
-            DELAY, TOTAL_QUERIES, LOAD_AVERAGE, CPU_USAGE, RAM_AVAILABLE
-        )
 
     def _send_resources(self):
         threads = []
@@ -31,7 +25,7 @@ class Client():
         thread_timeout = 0.05
         task_interval = 0.05
 
-        for res in self.res_types:
+        for res in ResourceMonitor.res_types:
             thread = Thread(
                 target=self._send,
                 args=(res,),

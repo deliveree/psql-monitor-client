@@ -23,7 +23,15 @@ This app triggers every second to retrieve these figures and pushes them to a ce
 
 ## Getting Started:
 
-### 1. Authentication Setup:
+### 1. Add credentials for daemon connection and psql access:
+Fill credentials in file **src/sample_creds.conf** and change its name to **creds.conf**
+
+- **host**: the name of the Client, which will be stored as key in Redis
+- **psql**: the target postgres database whose stats will be sent to daemon.
+- **daemon**: the target server that figures will be sent to.
+
+
+### 2. Authentication Setup:
 
 1. Make sure we already have SSL certificates and key for server and client (**Required**):
 ```
@@ -31,9 +39,10 @@ openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout server.key -out
 openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout client.key -out client.crt
 ```
 
-**Note**: Common name for server must be your server hostname (ex: example.com)
+**Note**: Common name for server must be your server hostname (ex: example.com), which is defined in **daemon's host** in file **creds.conf**
 
 2. Put **client.crt** and **client.key** in /src
+
 3. Make sure client's certificate (**client.crt**) has been added to the file that server uses to authenticate. The format for the file is:
 
 ```
@@ -44,12 +53,6 @@ client 1's certificate
 client 2's certificate
 -----END CERTIFICATE-----
 ```
-
-### 2. Add credentials for daemon connection and psql access:
-Fill credentials in file **src/sample_creds.conf** and change its name to **creds.conf**
-
-- **psql**: the target postgres database whose stats will be sent to daemon.
-- **daemon**: the target server that figures will be sent to.
 
 
 ### 3. Run App
