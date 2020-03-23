@@ -1,7 +1,6 @@
 import ssl
 from socket import socket
-from pickle import loads
-import logging
+from json import loads
 
 
 class TestServer:
@@ -14,10 +13,12 @@ class TestServer:
 
     def _get_ssl(self):
         ssl_context = ssl.create_default_context(
-            ssl.Purpose.CLIENT_AUTH, cafile="server.crt"
+            ssl.Purpose.CLIENT_AUTH, cafile="creds/server.crt"
         )
-        ssl_context.load_cert_chain('server.crt', 'server.key')
-        ssl_context.load_verify_locations(cafile="client_certs.crt")
+        ssl_context.load_cert_chain(
+            'creds/server.crt', 'creds/server.key'
+        )
+        ssl_context.load_verify_locations(cafile="creds/client_certs.crt")
         return ssl_context
 
     def start(self):

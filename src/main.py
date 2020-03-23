@@ -1,7 +1,7 @@
 import logging
 from toml import load
 
-from client import Client
+from modules.client import Client
 
 
 def config_log():

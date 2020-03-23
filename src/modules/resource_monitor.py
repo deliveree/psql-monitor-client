@@ -1,4 +1,3 @@
-from time import sleep
 from os import getloadavg
 from psutil import cpu_percent, virtual_memory
 

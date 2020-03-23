@@ -5,19 +5,38 @@ from socket import gethostname
 from threading import Thread, active_count
 import logging
 
-from psql_connector import PSQLConnector
-from ssl_connection import SSLConnection
-from resource_monitor import ResourceMonitor
+from modules.psql_connector import PSQLConnector
+from modules.ssl_connection import SSLConnection
+from modules.resource_monitor import ResourceMonitor
 
 
-class Client():
+class Client:
+    """
+    The Client that keeps sending its server's data to a central server
+
+    '''
+    Attributes
+    host : str
+        The name of the Client, which will be stored as key in Redis
+    res_monitor : ResourceMonitor
+        Responsible for retrieving resources
+    shared_conn : SSLConnection[]
+        The SSL connection that is used to send data to central server.
+        It is put in a list to ensure that it is accessed by one thread at a 
+        time
+    task_interval : timedelta
+        The minimum interval between sending resources
+    is_open : boolean
+        Whether the Client is still running
+    """
     def __init__(self, conf):
         psql_conn = PSQLConnector(conf["psql"])
 
         self.host = conf["host"]
         self.res_monitor = ResourceMonitor(psql_conn)
         self.shared_conn = [SSLConnection(conf["daemon"])]
-        self.interval = timedelta(seconds=1)
+        self.task_interval = timedelta(seconds=0.05)
+        self.is_open = True
 
     def _send_resources(self):
         threads = []
@@ -61,7 +80,7 @@ class Client():
         res = self.res_monitor.get_resource(res_type)
         payload = self._gen_payload(res_type, res)
 
-        while True:
+        while True and self.is_open:
             if self.shared_conn:
                 conn = self.shared_conn.pop()
                 conn.send(payload)
@@ -80,3 +99,6 @@ class Client():
             while True:
                 if self.shared_conn:
                     self.shared_conn[0].close()
+
+    def close(self):
+        self.is_open = False
