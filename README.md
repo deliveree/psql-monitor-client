@@ -24,7 +24,7 @@ This app triggers every second to retrieve these figures and pushes them to a ce
 ## Getting Started:
 
 ### 1. Add credentials for daemon connection and psql access:
-Fill credentials in file **src/sample_creds.conf** and change its name to **creds.conf**
+Fill credentials in file **src/conf/sample_creds.conf** and change its name to **creds.conf**
 
 - **host**: the name of the Client, which will be stored as key in Redis
 - **psql**: the target postgres database whose stats will be sent to daemon.
@@ -72,11 +72,16 @@ Each resource is retrieved and pushed to central server within a thread. The tim
 ### Test
 The test in this project run a server and client in different processes.
 
-Make sure server's and client's credentials (server.crt, server.key, client_certs.crt) are in **test/**.
+### Setup SSL
+- For Server: Make sure server's and client's credentials (server.crt, server.key, client_certs.crt) are in **test/creds**.
+- For Client: Make sure client's credentials ()
 
-Make sure common name for server when creating certicate is **localhost**.
+Make sure common name for server when creating certicate for **Client** is **localhost**.
+
+### Setup conf
+Make sure creds.conf are properly set in **test/conf**
 
 Run tests. In **test/**:
 ```
-pytest --disable-warnings
+pytest --disable-warnings -s
 ```

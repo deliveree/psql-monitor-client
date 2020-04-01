@@ -1,12 +1,11 @@
 import logging
-from toml import load
 
 from modules.client import Client
+from modules.utils import load_conf
 
 
-def config_log():
-    log_conf = load("conf/log.conf")
-    log_path = log_conf.get("filepath", "main.log")
+def config_log(log_conf):
+    log_path = log_conf["filepath"]
     logging.basicConfig(
         filename=log_path,
         level=logging.INFO,
@@ -15,7 +14,12 @@ def config_log():
 
 
 if __name__ == "__main__":
-    conf = load("conf/creds.conf")
-    config_log()
+    conf = load_conf()
+    config_log(conf["log"])
     client = Client(conf)
-    client.start()
+
+    try:
+        client.start()
+    except KeyboardInterrupt:
+        client.close()
+        logging.info("Client is shut down by KeyboardInterrupt")

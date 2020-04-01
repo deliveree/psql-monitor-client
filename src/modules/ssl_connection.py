@@ -5,24 +5,28 @@ import logging
 
 
 class SSLConnection:
-    def __init__(self, conf):
+    def __init__(self, daemon_conf, path_conf):
         try:
-            conn = self._get_ssl_context().wrap_socket(
-                socket(), server_hostname=conf["host"]
+            conn = self._get_ssl_context(path_conf).wrap_socket(
+                socket(), server_hostname=daemon_conf["host"]
             )
 
-            conn.connect((conf["host"], conf["port"]))
+            conn.connect((daemon_conf["host"], daemon_conf["port"]))
             self.conn = conn
         except ConnectionRefusedError as ex:
-            raise Exception(
+            logging.error(
                 "Please make sure the server this app connects to is running"
-            ) from ex
+            )
+            raise ex
 
-    def _get_ssl_context(self):
+    @staticmethod
+    def _get_ssl_context(paths):
         ssl_context = ssl.create_default_context(
-            ssl.Purpose.SERVER_AUTH, cafile="server.crt"
+            ssl.Purpose.SERVER_AUTH, cafile=paths["server_crt_path"]
         )
-        ssl_context.load_cert_chain('client.crt', 'client.key')
+        ssl_context.load_cert_chain(
+            paths["client_crt_path"], paths["client_key_path"]
+        )
         return ssl_context
 
     def send(self, data):

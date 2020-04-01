@@ -1,0 +1,15 @@
+asyncio==3.4.3
+attrs==19.3.0
+more-itertools==8.2.0
+packaging==20.1
+pluggy==0.13.1
+psutil==5.7.0
+psycopg2-binary==2.8.4
+py==1.8.1
+pyparsing==2.4.6
+pytest==5.3.5
+pytest-asyncio==0.10.0
+redis==3.4.1
+six==1.14.0
+toml==0.10.0
+wcwidth==0.1.8

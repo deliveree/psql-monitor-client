@@ -7,11 +7,14 @@ class PSQLConnector():
         self.conn = self._connect(conf)
         self.sync_type = conf["sync_type"]
 
-    def _connect(self, conf):
+    @staticmethod
+    def _connect(conf):
         conn = connect(
             database=conf["database"],
             user=conf["user"],
             password=conf["password"],
+            host=conf.get("host", "localhost"),
+            port=conf.get("port", 5432)
         )
 
         logging.info('Successfully connected with local PSQL')
