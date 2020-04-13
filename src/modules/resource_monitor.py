@@ -1,5 +1,6 @@
 from os import getloadavg
 from psutil import cpu_percent, virtual_memory
+import asyncio
 
 
 class ResourceMonitor:
@@ -9,6 +10,7 @@ class ResourceMonitor:
 
     def __init__(self, psql_conn):
         self.psql_conn = psql_conn
+        self.loop = asyncio.get_event_loop()
 
     def _get_delay_query(self):
         psql_sync_type = self.psql_conn.sync_type
@@ -25,36 +27,38 @@ class ResourceMonitor:
             """
         return query
 
-    def _get_delay(self):
+    async def _get_delay(self):
+        # async with self.psql_conn:
         query = self._get_delay_query()
-        delay = self.psql_conn.select_single(query) or 0
+        delay = await self.psql_conn.select_single(query) or 0
         return delay
 
-    def _get_total_queries(self):
+    async def _get_total_queries(self):
+        # async with self.psql_conn:
         query = """SELECT count(*)
                     FROM pg_stat_activity
                     WHERE datname = 'deliveree'
                             AND state = 'active'"""
-        count = self.psql_conn.select_single(query) or 0
+        count = await self.psql_conn.select_single(query) or 0
         if count != 0:
             count -= 1
         return count
 
-    def _get_load_average(self):
-        return getloadavg()[0]
+    async def _get_load_average(self):
+        return await getloadavg()[0]
 
-    def _get_cpu_usage(self):
-        return cpu_percent()
+    async def _get_cpu_usage(self):
+        return await cpu_percent()
 
-    def _get_ram_available(self):
-        return virtual_memory().free / 1024
+    async def _get_ram_available(self):
+        return await virtual_memory().free / 1024
 
-    def get_resource(self, type):
+    def get_resource(self, res_types):
         switcher = {
-            "delay": self._get_delay,
-            "total_queries": self._get_total_queries,
-            "load_average": self._get_load_average,
-            "cpu_usage": self._get_cpu_usage,
-            "ram_available": self._get_ram_available
+            "delay": self.loop.run_until_complete(self._get_delay()),
+            "total_queries": self.loop.run_until_complete(self._get_total_queries()),
+            "load_average": self.loop.run_until_complete(self._get_load_average()),
+            "cpu_usage": self.loop.run_until_complete(self._get_cpu_usage()),
+            "ram_available": self.loop.run_until_complete(self._get_ram_available())
         }
         return switcher[type]()

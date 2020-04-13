@@ -1,15 +1,18 @@
-from psycopg2 import connect, InterfaceError
+from asyncpg import connect, InterfaceError, create_pool
 import logging
+import asyncio
 
 
 class PSQLConnector():
     def __init__(self, conf):
-        self.conn = self._connect(conf)
+        loop = asyncio.get_event_loop()
+        self.conn = loop.run_until_complete(self._connect(conf))
         self.sync_type = conf["sync_type"]
+        self.conf = conf
 
     @staticmethod
-    def _connect(conf):
-        conn = connect(
+    async def _connect(conf):
+        conn = await connect(
             database=conf["database"],
             user=conf["user"],
             password=conf["password"],
@@ -20,19 +23,25 @@ class PSQLConnector():
         logging.info('Successfully connected with local PSQL')
         return conn
 
-    def _select_single_execute(self, query):
-        cur = self.conn.cursor()
-        cur.execute(query)
-        values = cur.fetchall()
-        return values[0][0]
+    async def _select_single_execute(self, query):
+        async with create_pool(
+            database=self.conf["database"],
+            user=self.conf["user"],
+            password=self.conf["password"],
+            host=self.conf.get("host", "localhost"),
+            port=self.conf.get("port", 5432)
+        ) as self.pool:
+            async with self.pool.acquire() as con:
+                value = await con.fetch(query)
+                return value[0][0]
 
-    def select_single(self, query):
+    async def select_single(self, query):
         try:
-            return self._select_single_execute(query)
+            return await self._select_single_execute(query)
         except InterfaceError as e:
             if "connection already closed" in str(e).lower():
                 self.conn = self.connect()
-                return self._select_single_execute(query)
+                return await self._select_single_execute(query)
             else:
                 raise
 
