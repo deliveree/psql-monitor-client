@@ -22,7 +22,7 @@ class Client:
         Responsible for retrieving resources
     shared_conn : SSLConnection[]
         The SSL connection that is used to send data to central server.
-        It is put in a list to ensure that it is accessed by one thread at a 
+        It is put in a list to ensure that it is accessed by one thread at a
         time
     task_interval : timedelta
         The minimum interval between task sending resources
@@ -43,20 +43,20 @@ class Client:
         thread_timeout = 0.05
 
         for res in ResourceMonitor.res_types:
-            thread = Thread(
-                target=self._send,
-                args=(res,),
-                name=res
-            )
-            threads.append(thread)
-            thread.start()
-            sleep(self.task_interval.total_seconds())
+            if self.is_open:
+                thread = Thread(
+                    target=self._send,
+                    args=(res,),
+                    name=res
+                )
+                threads.append(thread)
+                thread.start()
+                sleep(self.task_interval.total_seconds())
 
         for thread in threads:
             thread.join(thread_timeout)
             if thread.is_alive():
                 logging.error("Timeout for getting " + str(thread.name))
-
 
     def _gen_payload(self, key, value):
         updated_at_key = key + "_updated_at"
@@ -72,17 +72,23 @@ class Client:
         res = self.res_monitor.get_resource(res_type)
         payload = self._gen_payload(res_type, res)
 
-        while True:
+        while self.is_open:
             if self.shared_conn:
                 conn = self.shared_conn.pop()
-                conn.send(payload)
-                self.shared_conn.append(conn)
-                logging.info("Sent " + str(payload))
+
+                try:
+                    conn.send(payload)
+                    self.shared_conn.append(conn)
+                    logging.info("Sent " + str(payload))
+                except BrokenPipeError as e:
+                    logging.error(e)
+                    self.shared_conn.append(conn)
+                    self.close()
                 return
 
     def start(self):
         try:
-            while True and self.is_open:
+            while self.is_open:
                 self._send_resources()
         except Exception as ex:
             logging.error(ex)
@@ -96,3 +102,4 @@ class Client:
                 self.shared_conn[0].close()
                 break
 
+        logging.info("Closed connection")

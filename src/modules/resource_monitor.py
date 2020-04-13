@@ -40,13 +40,16 @@ class ResourceMonitor:
             count -= 1
         return count
 
-    def _get_load_average(self):
+    @staticmethod
+    def _get_load_average():
         return getloadavg()[0]
 
-    def _get_cpu_usage(self):
+    @staticmethod
+    def _get_cpu_usage():
         return cpu_percent()
 
-    def _get_ram_available(self):
+    @staticmethod
+    def _get_ram_available():
         return virtual_memory().free / 1024
 
     def get_resource(self, type):
