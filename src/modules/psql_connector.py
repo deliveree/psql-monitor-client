@@ -33,6 +33,7 @@ class PSQLConnector():
         ) as self.pool:
             async with self.pool.acquire() as con:
                 value = await con.fetch(query)
+                self.pool.release(con)
                 return value[0][0]
 
     async def select_single(self, query):

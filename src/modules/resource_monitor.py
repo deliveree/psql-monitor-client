@@ -1,6 +1,7 @@
 from os import getloadavg
 from psutil import cpu_percent, virtual_memory
 import asyncio
+import logging
 
 
 class ResourceMonitor:
@@ -44,21 +45,31 @@ class ResourceMonitor:
             count -= 1
         return count
 
-    async def _get_load_average(self):
-        return await getloadavg()[0]
+    @staticmethod
+    async def _get_load_average():
+        await asyncio.sleep(0.00001)
+        return getloadavg()[0]
 
-    async def _get_cpu_usage(self):
-        return await cpu_percent()
+    @staticmethod
+    async def _get_cpu_usage():
+        await asyncio.sleep(0.00001)
+        return cpu_percent()
 
-    async def _get_ram_available(self):
-        return await virtual_memory().free / 1024
+    @staticmethod
+    async def _get_ram_available():
+        await asyncio.sleep(0.00001)
+        return virtual_memory().free / 1024
 
-    def get_resource(self, res_types):
-        switcher = {
-            "delay": self.loop.run_until_complete(self._get_delay()),
-            "total_queries": self.loop.run_until_complete(self._get_total_queries()),
-            "load_average": self.loop.run_until_complete(self._get_load_average()),
-            "cpu_usage": self.loop.run_until_complete(self._get_cpu_usage()),
-            "ram_available": self.loop.run_until_complete(self._get_ram_available())
-        }
-        return switcher[type]()
+    def get_resource(self, type):
+        try:
+            switcher = {
+                "delay": self.loop.run_until_complete(self._get_delay()),
+                "total_queries": self.loop.run_until_complete(self._get_total_queries()),
+                "load_average": self.loop.run_until_complete(self._get_load_average()),
+                "cpu_usage": self.loop.run_until_complete(self._get_cpu_usage()),
+                "ram_available": self.loop.run_until_complete(self._get_ram_available())
+            }
+            return switcher[type]
+        except asyncio.TimeoutError as e:
+            logging.error(e)
+            # return switcher[type]
