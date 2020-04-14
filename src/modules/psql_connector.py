@@ -33,9 +33,8 @@ class PSQLConnector():
             max_inactive_connection_lifetime=0.05,
             timeout=0.05
         ) as self.pool:
-            async with self.pool.acquire() as con:
-                value = await con.fetch(query, timeout=0.05)
-                return value[0][0]
+            value = await self.pool.fetch(query, timeout=0.05)
+            return value[0][0]
 
     async def select_single(self, query):
         try:
