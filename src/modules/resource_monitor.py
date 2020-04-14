@@ -2,6 +2,7 @@ from os import getloadavg
 from psutil import cpu_percent, virtual_memory
 import asyncio
 import logging
+from async_timeout import timeout
 
 
 class ResourceMonitor:
@@ -29,36 +30,40 @@ class ResourceMonitor:
         return query
 
     async def _get_delay(self):
-        # async with self.psql_conn:
-        query = self._get_delay_query()
-        delay = await self.psql_conn.select_single(query) or 0
-        return delay
+        async with timeout(0.05):
+            query = self._get_delay_query()
+            delay = await self.psql_conn.select_single(query) or 0
+            return delay
 
     async def _get_total_queries(self):
-        # async with self.psql_conn:
         query = """SELECT count(*)
                     FROM pg_stat_activity
                     WHERE datname = 'deliveree'
                             AND state = 'active'"""
-        count = await self.psql_conn.select_single(query) or 0
-        if count != 0:
-            count -= 1
-        return count
+
+        async with timeout(0.05):
+            count = await self.psql_conn.select_single(query) or 0
+            if count != 0:
+                count -= 1
+            return count
 
     @staticmethod
     async def _get_load_average():
-        await asyncio.sleep(0.00001)
-        return getloadavg()[0]
+        async with timeout(0.05):
+            await asyncio.sleep(0.0001)
+            return getloadavg()[0]
 
     @staticmethod
     async def _get_cpu_usage():
-        await asyncio.sleep(0.00001)
-        return cpu_percent()
+        async with timeout(0.05):
+            await asyncio.sleep(0.05)
+            return cpu_percent()
 
     @staticmethod
     async def _get_ram_available():
-        await asyncio.sleep(0.00001)
-        return virtual_memory().free / 1024
+        async with timeout(0.05):
+            await asyncio.sleep(0.0001)
+            return virtual_memory().free / 1024
 
     def get_resource(self, type):
         try:
@@ -71,5 +76,4 @@ class ResourceMonitor:
             }
             return switcher[type]
         except asyncio.TimeoutError as e:
-            logging.error(e)
-            # return switcher[type]
+            logging.error("timeout")

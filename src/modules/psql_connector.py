@@ -29,11 +29,12 @@ class PSQLConnector():
             user=self.conf["user"],
             password=self.conf["password"],
             host=self.conf.get("host", "localhost"),
-            port=self.conf.get("port", 5432)
+            port=self.conf.get("port", 5432),
+            max_inactive_connection_lifetime=0.05,
+            timeout=0.05
         ) as self.pool:
             async with self.pool.acquire() as con:
-                value = await con.fetch(query)
-                self.pool.release(con)
+                value = await con.fetch(query, timeout=0.05)
                 return value[0][0]
 
     async def select_single(self, query):
