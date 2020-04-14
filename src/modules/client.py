@@ -4,6 +4,7 @@ from time import sleep
 from socket import gethostname
 from threading import Thread, active_count
 import logging
+import asyncio
 
 from modules.psql_connector import PSQLConnector
 from modules.ssl_connection import SSLConnection
@@ -41,7 +42,10 @@ class Client:
     def _send_resources(self):
         for res in ResourceMonitor.res_types:
             if self.is_open:
-                self._send(res)
+                try:
+                    self._send(res)
+                except asyncio.TimeoutError as e:
+                    logging.error(res + " timeout")
         #         thread = Thread(
         #             target=self._send,
         #             args=(res,),

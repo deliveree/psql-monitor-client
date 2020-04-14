@@ -48,32 +48,23 @@ class ResourceMonitor:
             return count
 
     @staticmethod
-    async def _get_load_average():
-        async with timeout(0.05):
-            await asyncio.sleep(0.0001)
-            return getloadavg()[0]
+    def _get_load_average():
+        return getloadavg()[0]
 
     @staticmethod
-    async def _get_cpu_usage():
-        async with timeout(0.05):
-            await asyncio.sleep(0.05)
-            return cpu_percent()
+    def _get_cpu_usage():
+        return cpu_percent()
 
     @staticmethod
-    async def _get_ram_available():
-        async with timeout(0.05):
-            await asyncio.sleep(0.0001)
-            return virtual_memory().free / 1024
+    def _get_ram_available():
+        return virtual_memory().free / 1024
 
     def get_resource(self, type):
-        try:
-            switcher = {
-                "delay": self.loop.run_until_complete(self._get_delay()),
-                "total_queries": self.loop.run_until_complete(self._get_total_queries()),
-                "load_average": self.loop.run_until_complete(self._get_load_average()),
-                "cpu_usage": self.loop.run_until_complete(self._get_cpu_usage()),
-                "ram_available": self.loop.run_until_complete(self._get_ram_available())
-            }
-            return switcher[type]
-        except asyncio.TimeoutError as e:
-            logging.error("timeout")
+        switcher = {
+            "delay": self.loop.run_until_complete(self._get_delay()),
+            "total_queries": self.loop.run_until_complete(self._get_total_queries()),
+            "load_average": self._get_load_average(),
+            "cpu_usage": self._get_cpu_usage(),
+            "ram_available": self._get_ram_available()
+        }
+        return switcher[type]
