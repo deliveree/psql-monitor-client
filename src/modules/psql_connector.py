@@ -7,23 +7,9 @@ from async_timeout import timeout
 class PSQLConnector():
     def __init__(self, conf):
         loop = asyncio.get_event_loop()
-        self.conn = loop.run_until_complete(self._connect(conf))
         self.sync_type = conf["sync_type"]
         self.conf = conf
         self.pool = loop.run_until_complete(self._create_pool())
-
-    @staticmethod
-    async def _connect(conf):
-        conn = await connect(
-            database=conf["database"],
-            user=conf["user"],
-            password=conf["password"],
-            host=conf.get("host", "localhost"),
-            port=conf.get("port", 5432)
-        )
-
-        logging.info('Successfully connected with local PSQL')
-        return conn
 
     async def _create_pool(self):
         pool = await create_pool(
@@ -34,6 +20,8 @@ class PSQLConnector():
             port=self.conf.get("port", 5432),
             max_inactive_connection_lifetime=0.05,
             timeout=0.05)
+
+        logging.info('Successfully connected with local PSQL')
         return pool
 
     async def _select_single_execute(self, query):
@@ -46,7 +34,7 @@ class PSQLConnector():
                 return await self._select_single_execute(query)
         except InterfaceError as e:
             if "connection already closed" in str(e).lower():
-                self.conn = loop.run_until_complete(self._connect(conf))
+                self.conn = loop.run_until_complete(self._create_pool())
                 async with timeout(0.05):
                     return await self._select_single_execute(query)
             else:
