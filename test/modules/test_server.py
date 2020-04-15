@@ -15,10 +15,10 @@ class TestServer:
         ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         ssl_context.verify_mode = ssl.CERT_REQUIRED
         ssl_context.load_cert_chain(
-            '/home/hungtran/Working/Deliveree/psql-monitoring/psql-monitor-client/test/creds/server.crt', 
-            '/home/hungtran/Working/Deliveree/psql-monitoring/psql-monitor-client/test/creds/server.key'
+            './creds/server.crt',
+            './creds/server.key'
         )
-        ssl_context.load_verify_locations(cafile="/home/hungtran/Working/Deliveree/psql-monitoring/psql-monitor-client/test/creds/client_certs.crt")
+        ssl_context.load_verify_locations(cafile="./creds/client_certs.crt")
         return ssl_context
 
     def start(self):
@@ -40,6 +40,3 @@ class TestServer:
     def close(self):
         self.writer.close()
         self.server.close()
-
-server = TestServer()
-server.start()
