@@ -44,8 +44,9 @@ class Client:
             if self.is_open:
                 try:
                     self._send(res)
+                    sleep(self.task_interval.total_seconds())
                 except TimeoutError:
-                    logging.error(res + " timeout")
+                    logging.error("Timeout for getting " + res)
 
     def _gen_payload(self, key, value):
         updated_at_key = key + "_updated_at"

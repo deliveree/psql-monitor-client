@@ -3,8 +3,8 @@ host = "dev-test-1"
 [psql]
     database = "db_test"
     port = 5432
-    user = "postgres"
-    password = "366369"
+    user = "user"
+    password = "password"
     sync_type = "binary"
 
 [daemon]

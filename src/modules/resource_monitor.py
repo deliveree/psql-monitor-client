@@ -33,7 +33,7 @@ class ResourceMonitor:
         value = self.loop.run_until_complete(
             self.psql_conn.select_single(query))
         if value is None:
-            return 0
+            return -1
         return value
 
     def _get_total_queries(self):
