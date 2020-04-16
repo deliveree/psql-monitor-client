@@ -4,6 +4,7 @@ from time import sleep
 from socket import gethostname
 from threading import Thread, active_count
 import logging
+from asyncio import TimeoutError
 
 from modules.psql_connector import PSQLConnector
 from modules.ssl_connection import SSLConnection
@@ -39,24 +40,13 @@ class Client:
         self.is_open = True
 
     def _send_resources(self):
-        threads = []
-        thread_timeout = 0.05
-
         for res in ResourceMonitor.res_types:
             if self.is_open:
-                thread = Thread(
-                    target=self._send,
-                    args=(res,),
-                    name=res
-                )
-                threads.append(thread)
-                thread.start()
-                sleep(self.task_interval.total_seconds())
-
-        for thread in threads:
-            thread.join(thread_timeout)
-            if thread.is_alive():
-                logging.error("Timeout for getting " + str(thread.name))
+                try:
+                    self._send(res)
+                    sleep(self.task_interval.total_seconds())
+                except TimeoutError:
+                    logging.error("Timeout for getting " + res)
 
     def _gen_payload(self, key, value):
         updated_at_key = key + "_updated_at"

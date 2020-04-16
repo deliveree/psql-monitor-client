@@ -1,5 +1,7 @@
 from os import getloadavg
 from psutil import cpu_percent, virtual_memory
+import asyncio
+import logging
 
 
 class ResourceMonitor:
@@ -9,6 +11,7 @@ class ResourceMonitor:
 
     def __init__(self, psql_conn):
         self.psql_conn = psql_conn
+        self.loop = asyncio.get_event_loop()
 
     def _get_delay_query(self):
         psql_sync_type = self.psql_conn.sync_type
@@ -27,15 +30,20 @@ class ResourceMonitor:
 
     def _get_delay(self):
         query = self._get_delay_query()
-        delay = self.psql_conn.select_single(query) or 0
-        return delay
+        value = self.loop.run_until_complete(
+            self.psql_conn.select_single(query))
+        if value is None:
+            return -1
+        return value
 
     def _get_total_queries(self):
         query = """SELECT count(*)
                     FROM pg_stat_activity
                     WHERE datname = 'deliveree'
                             AND state = 'active'"""
-        count = self.psql_conn.select_single(query) or 0
+
+        count = self.loop.run_until_complete(
+            self.psql_conn.select_single(query) or 0)
         if count != 0:
             count -= 1
         return count

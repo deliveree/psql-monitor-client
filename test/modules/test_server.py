@@ -15,7 +15,8 @@ class TestServer:
         ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         ssl_context.verify_mode = ssl.CERT_REQUIRED
         ssl_context.load_cert_chain(
-            './creds/server.crt', './creds/server.key'
+            './creds/server.crt',
+            './creds/server.key'
         )
         ssl_context.load_verify_locations(cafile="./creds/client_certs.crt")
         return ssl_context
